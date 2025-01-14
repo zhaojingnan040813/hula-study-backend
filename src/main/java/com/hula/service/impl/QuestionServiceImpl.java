@@ -1,7 +1,9 @@
 package com.hula.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hula.common.ErrorCode;
@@ -12,6 +14,7 @@ import com.hula.model.dto.question.QuestionQueryRequest;
 import com.hula.model.entity.Question;
 //import com.hula.model.entity.QuestionFavour;
 //import com.hula.model.entity.QuestionThumb;
+import com.hula.model.entity.QuestionBankQuestion;
 import com.hula.model.entity.User;
 import com.hula.model.vo.QuestionVO;
 import com.hula.model.vo.UserVO;
@@ -43,6 +46,9 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private QuestionBankQuestionServiceImpl questionBankQuestionService;
 
     /**
      * 校验数据
@@ -85,11 +91,12 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         String title = questionQueryRequest.getTitle();
         String content = questionQueryRequest.getContent();
         String searchText = questionQueryRequest.getSearchText();
-        String sortField = questionQueryRequest.getSortField();
+        String sortField = questionQueryRequest.getSortField();//这个是父类PageRequest中的字段
         String sortOrder = questionQueryRequest.getSortOrder();
         List<String> tagList = questionQueryRequest.getTags();
         Long userId = questionQueryRequest.getUserId();
         String answer = questionQueryRequest.getAnswer();
+
 
         // todo 补充需要的查询条件
         // 从多字段中搜索
@@ -100,6 +107,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         // 模糊查询
         queryWrapper.like(StringUtils.isNotBlank(title), "title", title);
         queryWrapper.like(StringUtils.isNotBlank(content), "content", content);
+        queryWrapper.like(StringUtils.isNotBlank(answer), "answer", answer);
         // JSON 数组查询
         if (CollUtil.isNotEmpty(tagList)) {
             for (String tag : tagList) {
@@ -222,5 +230,34 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         questionVOPage.setRecords(questionVOList);
         return questionVOPage;
     }
+
+    @Override
+    public Page<Question> listQuestionByPage(QuestionQueryRequest questionQueryRequest) {
+        long current = questionQueryRequest.getCurrent();
+        long size = questionQueryRequest.getPageSize();
+        // 题目表的查询条件
+        QueryWrapper<Question> queryWrapper = this.getQueryWrapper(questionQueryRequest);
+        // 根据题库查询题目列表接口
+        Long questionBankId = questionQueryRequest.getQuestionBankId();
+        if (questionBankId != null) {
+            // 查询题库内的题目 id
+            LambdaQueryWrapper<QuestionBankQuestion> lambdaQueryWrapper = Wrappers.lambdaQuery(QuestionBankQuestion.class)
+                    .select(QuestionBankQuestion::getQuestionId)
+                    .eq(QuestionBankQuestion::getQuestionBankId, questionBankId);
+            List<QuestionBankQuestion> questionList = questionBankQuestionService.list(lambdaQueryWrapper);
+            if (CollUtil.isNotEmpty(questionList)) {
+                // 取出题目 id 集合
+                Set<Long> questionIdSet = questionList.stream()
+                        .map(QuestionBankQuestion::getQuestionId)
+                        .collect(Collectors.toSet());
+                // 复用原有题目表的查询条件
+                queryWrapper.in("id", questionIdSet);
+            }
+        }
+        // 查询数据库
+        Page<Question> questionPage = this.page(new Page<>(current, size), queryWrapper);
+        return questionPage;
+    }
+
 
 }

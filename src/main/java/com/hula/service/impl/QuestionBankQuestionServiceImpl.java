@@ -24,6 +24,7 @@ import com.hula.utils.SqlUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -47,6 +48,7 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
     @Resource
     private UserService userService;
 
+    @Lazy // 解决循环依赖问题
     @Resource
     private QuestionService questionService;
 
@@ -63,7 +65,7 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
     @Override
     public void validQuestionBankQuestion(QuestionBankQuestion questionBankQuestion, boolean add) {
         ThrowUtils.throwIf(questionBankQuestion == null, ErrorCode.PARAMS_ERROR);
-        // 题目和题库必须存在
+        // 题目和题库必须存在  这个方法是会给多个 Controller 复用的
         Long questionId = questionBankQuestion.getQuestionId();
         if (questionId != null) {
             Question question = questionService.getById(questionId);

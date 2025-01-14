@@ -1,6 +1,8 @@
 package com.hula.model.vo;
 
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.hula.model.entity.Question;
 import com.hula.model.entity.QuestionBank;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
@@ -13,7 +15,7 @@ import java.util.List;
  * 题库视图
  *
  * @author: 赵景南
- *  
+ *
  */
 @Data
 public class QuestionBankVO implements Serializable {
@@ -52,6 +54,10 @@ public class QuestionBankVO implements Serializable {
      * 更新时间
      */
     private Date updateTime;
+
+    private Page<Question> questionPage;
+
+
 
 
 

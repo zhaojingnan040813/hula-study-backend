@@ -11,7 +11,7 @@ import java.util.List;
  * 查询题目请求
  *
  * @author: 赵景南
- *  
+ *
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -56,6 +56,11 @@ public class QuestionQueryRequest extends PageRequest implements Serializable {
      * 推荐答案
      */
     private String answer;
+
+    /**
+     * 题目库id
+     */
+    private Long questionBankId;
 
     private static final long serialVersionUID = 1L;
 }

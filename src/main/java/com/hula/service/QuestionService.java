@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
  * 题目服务
  *
  * @author: 赵景南
- *  
+ *
  */
 public interface QuestionService extends IService<Question> {
 
@@ -32,7 +32,7 @@ public interface QuestionService extends IService<Question> {
      * @return
      */
     QueryWrapper<Question> getQueryWrapper(QuestionQueryRequest questionQueryRequest);
-    
+
     /**
      * 获取题目封装
      *
@@ -50,4 +50,6 @@ public interface QuestionService extends IService<Question> {
      * @return
      */
     Page<QuestionVO> getQuestionVOPage(Page<Question> questionPage, HttpServletRequest request);
+
+    Page<Question> listQuestionByPage(QuestionQueryRequest questionQueryRequest);
 }

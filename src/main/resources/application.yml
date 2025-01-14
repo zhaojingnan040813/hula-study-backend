@@ -1,9 +1,14 @@
 # 公共配置文件
 # @author: 赵景南
-#   
+#
 spring:
   application:
     name: hula-study
+  devtools:
+    restart:
+      enabled: false
+      additional-paths: src/main/java
+
   # 默认 dev 环境
 #  profiles:
 #    active: dev
