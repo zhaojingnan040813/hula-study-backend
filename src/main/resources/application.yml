@@ -4,6 +4,7 @@
 spring:
   application:
     name: hula-study
+    # 我不理解，我这里明明关闭热部署了
   devtools:
     restart:
       enabled: false

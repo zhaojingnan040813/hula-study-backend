@@ -55,7 +55,7 @@ public class QuestionBankVO implements Serializable {
      */
     private Date updateTime;
 
-    private Page<Question> questionPage;
+    private Page<QuestionVO> questionPage;
 
 
 

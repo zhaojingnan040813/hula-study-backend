@@ -66,8 +66,9 @@ public class QuestionController {
         BeanUtils.copyProperties(questionAddRequest, question);// 对于Tags的处理，需要额外处理
         // 把List<String> tags 转成 String 类型的 JSON 字符串
         List<String> tagList = questionAddRequest.getTags();
-        question.setTags(JSONUtil.toJsonStr(tagList));
-
+        if (tagList != null) {
+            question.setTags(JSONUtil.toJsonStr(tagList));
+        }
 
 
         // 数据校验
@@ -126,6 +127,12 @@ public class QuestionController {
         // todo 在此处将实体类和 DTO 进行转换
         Question question = new Question();
         BeanUtils.copyProperties(questionUpdateRequest, question);
+        // 把List<String> tags 转成 String 类型的 JSON 字符串
+        List<String> tagList = questionUpdateRequest.getTags();
+        if (tagList != null) {
+            question.setTags(JSONUtil.toJsonStr(tagList));
+        }
+
         // 数据校验
         questionService.validQuestion(question, false);
         // 判断是否存在
@@ -147,6 +154,8 @@ public class QuestionController {
      */
     @GetMapping("/get/vo")
     public BaseResponse<QuestionVO> getQuestionVOById(long id, HttpServletRequest request) {
+//        ThrowUtils.throwIf();
+
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         // 查询数据库
         Question question = questionService.getById(id);
@@ -181,8 +190,8 @@ public class QuestionController {
                                                                HttpServletRequest request) {
         long current = questionQueryRequest.getCurrent();
         long size = questionQueryRequest.getPageSize();
-        // 限制爬虫
-        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);// size等于20也可以，size大于21就会报错
+        // 限制爬虫,从20改成了200，因为我们想要所以的题库列表不分页
+        ThrowUtils.throwIf(size > 200, ErrorCode.PARAMS_ERROR);// size等于20也可以，size大于21就会报错
         // 查询数据库
         Page<Question> questionPage = questionService.page(new Page<>(current, size),
                 questionService.getQueryWrapper(questionQueryRequest));
@@ -231,6 +240,11 @@ public class QuestionController {
         // todo 在此处将实体类和 DTO 进行转换
         Question question = new Question();
         BeanUtils.copyProperties(questionEditRequest, question);
+        List<String> tagList = questionEditRequest.getTags();
+        if (tagList != null) {
+            question.setTags(JSONUtil.toJsonStr(tagList));
+        }
+
         // 数据校验
         questionService.validQuestion(question, false);
         User loginUser = userService.getLoginUser(request);
