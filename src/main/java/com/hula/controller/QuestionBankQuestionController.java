@@ -171,11 +171,14 @@ public class QuestionBankQuestionController {
                                                                                        HttpServletRequest request) {
         long current = questionBankQuestionQueryRequest.getCurrent();
         long size = questionBankQuestionQueryRequest.getPageSize();
+        Long questionId = questionBankQuestionQueryRequest.getQuestionId();
+
+
         // 限制爬虫
-        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+//        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
         // 查询数据库
         Page<QuestionBankQuestion> questionBankQuestionPage = questionBankQuestionService.page(new Page<>(current, size),
-                questionBankQuestionService.getQueryWrapper(questionBankQuestionQueryRequest));
+                questionBankQuestionService.getQueryWrapper(questionBankQuestionQueryRequest));//这个查询条件里面已经有了questionId
         // 获取封装类
         return ResultUtils.success(questionBankQuestionService.getQuestionBankQuestionVOPage(questionBankQuestionPage, request));
     }

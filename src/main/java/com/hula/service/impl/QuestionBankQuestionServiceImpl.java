@@ -12,8 +12,6 @@ import com.hula.model.dto.questionbankquestion.QuestionBankQuestionQueryRequest;
 import com.hula.model.entity.Question;
 import com.hula.model.entity.QuestionBank;
 import com.hula.model.entity.QuestionBankQuestion;
-//import com.hula.model.entity.QuestionBankQuestionFavour;
-//import com.hula.model.entity.QuestionBankQuestionThumb;
 import com.hula.model.entity.User;
 import com.hula.model.vo.QuestionBankQuestionVO;
 import com.hula.model.vo.UserVO;
@@ -23,13 +21,11 @@ import com.hula.service.UserService;
 import com.hula.utils.SqlUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,7 +35,6 @@ import java.util.stream.Collectors;
  * 题目题库关联表服务实现
  *
  * @author: 赵景南
- *
  */
 @Service
 @Slf4j
@@ -60,7 +55,7 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
      * 校验数据
      *
      * @param questionBankQuestion
-     * @param add      对创建的数据进行校验
+     * @param add                  对创建的数据进行校验
      */
     @Override
     public void validQuestionBankQuestion(QuestionBankQuestion questionBankQuestion, boolean add) {
@@ -90,8 +85,6 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
 //        }
 
 
-
-
     }
 
     /**
@@ -112,6 +105,8 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
         String sortField = questionBankQuestionQueryRequest.getSortField();
         String sortOrder = questionBankQuestionQueryRequest.getSortOrder();
         Long userId = questionBankQuestionQueryRequest.getUserId();
+        Long questionId = questionBankQuestionQueryRequest.getQuestionId();
+        Long questionBankId = questionBankQuestionQueryRequest.getQuestionBankId();
         // todo 补充需要的查询条件
         // 从多字段中搜索
 //        if (StringUtils.isNotBlank(searchText)) {
@@ -131,6 +126,8 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
         queryWrapper.ne(ObjectUtils.isNotEmpty(notId), "id", notId);
         queryWrapper.eq(ObjectUtils.isNotEmpty(id), "id", id);
         queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "userId", userId);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(questionId), "questionId", questionId);
+        queryWrapper.eq(ObjectUtils.isNotEmpty(questionBankId), "questionBankId", questionBankId);
         // 排序规则
         queryWrapper.orderBy(SqlUtils.validSortField(sortField),
                 sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
@@ -183,7 +180,7 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
     }
 
     /**
-     * 分页获取题目题库关联表封装
+     * 分页获取题库题目关联封装
      *
      * @param questionBankQuestionPage
      * @param request
@@ -207,26 +204,6 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
         Set<Long> userIdSet = questionBankQuestionList.stream().map(QuestionBankQuestion::getUserId).collect(Collectors.toSet());
         Map<Long, List<User>> userIdUserListMap = userService.listByIds(userIdSet).stream()
                 .collect(Collectors.groupingBy(User::getId));
-        // 2. 已登录，获取用户点赞、收藏状态
-        Map<Long, Boolean> questionBankQuestionIdHasThumbMap = new HashMap<>();
-        Map<Long, Boolean> questionBankQuestionIdHasFavourMap = new HashMap<>();
-        User loginUser = userService.getLoginUserPermitNull(request);
-//        if (loginUser != null) {
-//            Set<Long> questionBankQuestionIdSet = questionBankQuestionList.stream().map(QuestionBankQuestion::getId).collect(Collectors.toSet());
-//            loginUser = userService.getLoginUser(request);
-//            // 获取点赞
-//            QueryWrapper<QuestionBankQuestionThumb> questionBankQuestionThumbQueryWrapper = new QueryWrapper<>();
-//            questionBankQuestionThumbQueryWrapper.in("questionBankQuestionId", questionBankQuestionIdSet);
-//            questionBankQuestionThumbQueryWrapper.eq("userId", loginUser.getId());
-//            List<QuestionBankQuestionThumb> questionBankQuestionQuestionBankQuestionThumbList = questionBankQuestionThumbMapper.selectList(questionBankQuestionThumbQueryWrapper);
-//            questionBankQuestionQuestionBankQuestionThumbList.forEach(questionBankQuestionQuestionBankQuestionThumb -> questionBankQuestionIdHasThumbMap.put(questionBankQuestionQuestionBankQuestionThumb.getQuestionBankQuestionId(), true));
-//            // 获取收藏
-//            QueryWrapper<QuestionBankQuestionFavour> questionBankQuestionFavourQueryWrapper = new QueryWrapper<>();
-//            questionBankQuestionFavourQueryWrapper.in("questionBankQuestionId", questionBankQuestionIdSet);
-//            questionBankQuestionFavourQueryWrapper.eq("userId", loginUser.getId());
-//            List<QuestionBankQuestionFavour> questionBankQuestionFavourList = questionBankQuestionFavourMapper.selectList(questionBankQuestionFavourQueryWrapper);
-//            questionBankQuestionFavourList.forEach(questionBankQuestionFavour -> questionBankQuestionIdHasFavourMap.put(questionBankQuestionFavour.getQuestionBankQuestionId(), true));
-//        }
         // 填充信息
         questionBankQuestionVOList.forEach(questionBankQuestionVO -> {
             Long userId = questionBankQuestionVO.getUserId();
@@ -235,8 +212,6 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
                 user = userIdUserListMap.get(userId).get(0);
             }
             questionBankQuestionVO.setUser(userService.getUserVO(user));
-//            questionBankQuestionVO.setHasThumb(questionBankQuestionIdHasThumbMap.getOrDefault(questionBankQuestionVO.getId(), false));
-//            questionBankQuestionVO.setHasFavour(questionBankQuestionIdHasFavourMap.getOrDefault(questionBankQuestionVO.getId(), false));
         });
         // endregion
 

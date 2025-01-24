@@ -1,12 +1,14 @@
 package com.hula.service.impl;
 
 import static com.hula.constant.UserConstant.USER_LOGIN_STATE;
+import static org.springframework.data.elasticsearch.annotations.DateFormat.date;
 
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hula.common.ErrorCode;
 import com.hula.constant.CommonConstant;
+import com.hula.constant.RedisConstant;
 import com.hula.exception.BusinessException;
 import com.hula.mapper.UserMapper;
 import com.hula.model.dto.user.UserQueryRequest;
@@ -16,13 +18,18 @@ import com.hula.model.vo.LoginUserVO;
 import com.hula.model.vo.UserVO;
 import com.hula.service.UserService;
 import com.hula.utils.SqlUtils;
-import java.util.ArrayList;
-import java.util.List;
+
+import java.time.LocalDate;
+import java.time.Year;
+import java.util.*;
 import java.util.stream.Collectors;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 import org.apache.commons.lang3.StringUtils;
+import org.redisson.api.RBitSet;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -36,6 +43,9 @@ import org.springframework.util.DigestUtils;
 @Service
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+
+    @Resource
+    private RedissonClient redissonClient;
 
     /**
      * 盐值，混淆密码
@@ -269,4 +279,56 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 sortField);
         return queryWrapper;
     }
+
+    /**
+     * 添加用户签到记录
+     *
+     * @param userId 用户签到
+     * @return 当前是否已签到成功
+     */
+    public boolean addUserSignIn(long userId) {
+        LocalDate date = LocalDate.now();
+        String key = RedisConstant.getUserSignInRedisKey(date.getYear(), userId);
+        RBitSet signInBitSet = redissonClient.getBitSet(key);
+        // 获取当前日期是一年中的第几天，作为偏移量（从 1 开始计数）
+        int offset = date.getDayOfYear();
+        // 检查当天是否已经签到
+        if (!signInBitSet.get(offset)) {//得不到当前userid的signInBitSet
+            // 如果当天还未签到，则设置
+            return signInBitSet.set(offset, true);//第一个参数是当前的第几位，第二个参数是true或者false
+        }
+        // 当天已签到
+        return true;
+    }
+    /**
+     * 获取用户某个年份的签到记录
+     *
+     * @param userId 用户 id
+     * @param year   年份（为空表示当前年份）
+     * @return 签到记录映射
+     */
+    @Override
+    public List<Integer> getUserSignInRecord(long userId, Integer year) {
+        if (year == null) {
+            LocalDate date = LocalDate.now();
+            year = date.getYear();
+        }
+        String key = RedisConstant.getUserSignInRedisKey(year, userId);//根据年份和用户ID获取到key
+        RBitSet signInBitSet = redissonClient.getBitSet(key);
+
+        // 加载 BitSet 到内存中，避免后续读取时发送多次请求 缓存到JAVA内存中
+        BitSet bitSet = signInBitSet.asBitSet();// 这里的 bitSet是JDK的，这样就缓存到了JAVA内存中，以后就不从signInBitSet中获取了，而是从bitSet中获取
+
+        ArrayList<Integer> dayList = new ArrayList<>();
+
+        int index=bitSet.nextSetBit(0);
+        while(index>=0){
+            dayList.add(index);
+            // 继续查找下一个被设置为1的位置
+            index=bitSet.nextSetBit(index+1);
+        }
+        return dayList;
+    }
+
+
 }
