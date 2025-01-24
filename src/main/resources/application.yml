@@ -92,10 +92,12 @@ wx:
 # todo 需替换配置
 cos:
   client:
-    accessKey: xxx
-    secretKey: xxx
-    region: xxx
-    bucket: xxx
+    accessKey: 2sVu66uVs1xfAQVIsEMHzTjmeJp9HCtM
+    secretKey: AKID0ufDZjkY9YkkPtLgpjPr68wVv89vToCO
+    region: ap-beijing
+    bucket: study -1326939213
+#    host: study-1326939213.cos.ap-beijing.myqcloud.com
+
 # 接口文档配置
 knife4j:
   enable: true
