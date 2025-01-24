@@ -1,6 +1,7 @@
 package com.hula.job.once;
 
 import cn.hutool.core.collection.CollUtil;
+import com.hula.annotation.DistributedLock;
 import com.hula.esdao.PostEsDao;
 import com.hula.esdao.QuestionEsDao;
 import com.hula.model.dto.post.PostEsDTO;
@@ -36,6 +37,7 @@ public class FullSyncQuestionToEs implements CommandLineRunner {
     private QuestionEsDao questionEsDao;
 
     @Override
+    @DistributedLock(key = "fullSyncQuestionToEs", leaseTime = 60 * 1000,waitTime = 10 * 1000)
     public void run(String... args) {
         // 全量获取题目（数据量不大的情况下使用）
         List<Question> questionList = questionService.list();//先从数据库里面全量获取题目
