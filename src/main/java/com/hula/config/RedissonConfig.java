@@ -28,7 +28,7 @@ public class RedissonConfig {
     private String password;
 
     @Bean
-    public RedissonClient redissonClient() {
+    public RedissonClient redissonClient() {//这个东西应该是要查官方文档的
         Config config = new Config();//导入的是redission的包，要创建redission的包
         config.useSingleServer() //表示用单个服务器
 //      redis://  它是协议，然后再叫域名，再加端口

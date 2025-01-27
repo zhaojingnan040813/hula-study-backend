@@ -6,8 +6,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.hula.model.dto.question.QuestionQueryRequest;
 import com.hula.model.entity.Question;
 import com.hula.model.vo.QuestionVO;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 题目服务
@@ -62,5 +64,12 @@ public interface QuestionService extends IService<Question> {
     Page<Question> searchFromEs(QuestionQueryRequest questionQueryRequest);
 
 
-
+    /**
+     * 批量删除问题
+     *
+     * @param questionIdList 问题ID列表
+     * @throws Exception 当发生异常时抛出，并回滚事务
+     */
+    @Transactional(rollbackFor = Exception.class)
+    void batchDeleteQuestions(List<Long> questionIdList);
 }

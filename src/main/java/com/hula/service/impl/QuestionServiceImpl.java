@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hula.common.ErrorCode;
 import com.hula.constant.CommonConstant;
+import com.hula.exception.BusinessException;
 import com.hula.exception.ThrowUtils;
 import com.hula.mapper.QuestionMapper;
 import com.hula.model.dto.question.QuestionEsDTO;
@@ -37,6 +38,7 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -357,6 +359,37 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         return page;
     }
 
+    /**
+     * 批量删除问题
+     *
+     * @param questionIdList 问题ID列表
+     * @throws Exception 当发生异常时抛出，并回滚事务
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void batchDeleteQuestions(List<Long> questionIdList) {
+        if (CollUtil.isEmpty(questionIdList)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "要删除的题目列表不能为空");
+        }
+        for (Long questionId : questionIdList) {
+            boolean result = this.removeById(questionId);
+            if (!result) {
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "删除题目失败");
+            }
+            // 移除题目题库关系 （注意删除题目不要忽略这个）也就是从关联表中删除
+            LambdaQueryWrapper<QuestionBankQuestion> lambdaQueryWrapper = Wrappers.lambdaQuery(QuestionBankQuestion.class)
+                    .eq(QuestionBankQuestion::getQuestionId, questionId);
+            result = questionBankQuestionService.remove(lambdaQueryWrapper);
+            if (!result) {
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "删除题目题库关联失败");
+            }
+        }
+    }
 
 
 }
+
+
+//zhao jing nan zhao jing nan li meng meng shi qi zhao tian tian le zhao jing nan lin xianzhi huang qi liang liang liang
+// // zhao jing nan zhao tian le pei ying zheng li guo qing zhao
+// public public public

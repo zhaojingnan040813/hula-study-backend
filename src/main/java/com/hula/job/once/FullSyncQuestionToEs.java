@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * 以后如果你不想要在项目启动的时候加载这个任务，那就把 @Component 注解去掉即可
  *
  */
-@Component
+//@Component
 @Slf4j
 public class FullSyncQuestionToEs implements CommandLineRunner {
 

@@ -294,7 +294,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         int offset = date.getDayOfYear();
         // 检查当天是否已经签到
         if (!signInBitSet.get(offset)) {//得不到当前userid的signInBitSet
-            // 如果当天还未签到，则设置
+            // 如果当天还未签到，则设置,原来我们把用户签到记录放到了Redis里面而不是数据库
             return signInBitSet.set(offset, true);//第一个参数是当前的第几位，第二个参数是true或者false
         }
         // 当天已签到
