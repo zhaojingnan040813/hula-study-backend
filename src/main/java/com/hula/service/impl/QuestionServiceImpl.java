@@ -371,6 +371,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         if (CollUtil.isEmpty(questionIdList)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "要删除的题目列表不能为空");
         }
+
         for (Long questionId : questionIdList) {
             boolean result = this.removeById(questionId);
             if (!result) {
@@ -379,17 +380,11 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
             // 移除题目题库关系 （注意删除题目不要忽略这个）也就是从关联表中删除
             LambdaQueryWrapper<QuestionBankQuestion> lambdaQueryWrapper = Wrappers.lambdaQuery(QuestionBankQuestion.class)
                     .eq(QuestionBankQuestion::getQuestionId, questionId);
-            result = questionBankQuestionService.remove(lambdaQueryWrapper);
+            result = questionBankQuestionService.remove(lambdaQueryWrapper);//对于一些没有关联题库的题目要删除的话，这里就会报错
             if (!result) {
                 throw new BusinessException(ErrorCode.OPERATION_ERROR, "删除题目题库关联失败");
             }
         }
     }
-
-
 }
 
-
-//zhao jing nan zhao jing nan li meng meng shi qi zhao tian tian le zhao jing nan lin xianzhi huang qi liang liang liang
-// // zhao jing nan zhao tian le pei ying zheng li guo qing zhao
-// public public public

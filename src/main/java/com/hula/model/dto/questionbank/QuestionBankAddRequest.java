@@ -9,7 +9,7 @@ import java.util.List;
  * 创建题库请求
  *
  * @author: 赵景南
- *  
+ *
  */
 @Data
 public class QuestionBankAddRequest implements Serializable {
@@ -22,7 +22,7 @@ public class QuestionBankAddRequest implements Serializable {
     /**
      * 内容
      */
-    private String content;
+    private String description;
 
     /**
      * 图片

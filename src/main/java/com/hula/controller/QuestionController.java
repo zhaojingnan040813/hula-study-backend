@@ -10,10 +10,7 @@ import com.hula.common.ResultUtils;
 import com.hula.constant.UserConstant;
 import com.hula.exception.BusinessException;
 import com.hula.exception.ThrowUtils;
-import com.hula.model.dto.question.QuestionAddRequest;
-import com.hula.model.dto.question.QuestionEditRequest;
-import com.hula.model.dto.question.QuestionQueryRequest;
-import com.hula.model.dto.question.QuestionUpdateRequest;
+import com.hula.model.dto.question.*;
 import com.hula.model.dto.questionbankquestion.QuestionBankQuestionBatchAddRequest;
 import com.hula.model.dto.questionbankquestion.QuestionBankQuestionBatchRemoveRequest;
 import com.hula.model.entity.Question;
@@ -279,26 +276,26 @@ public class QuestionController {
         return ResultUtils.success(questionService.getQuestionVOPage(questionPage, request));
     }
 
-    /**
-     * 批量添加题目到题库
-     * @param questionBankQuestionBatchAddRequest
-     * @param request
-     * @return
-     */
-    @PostMapping("/add/batch")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Boolean> batchAddQuestionsToBank(
-            @RequestBody QuestionBankQuestionBatchAddRequest questionBankQuestionBatchAddRequest,
-            HttpServletRequest request
-    ) {
-        // 参数校验
-        ThrowUtils.throwIf(questionBankQuestionBatchAddRequest == null, ErrorCode.PARAMS_ERROR);
-        User loginUser = userService.getLoginUser(request);
-        Long questionBankId = questionBankQuestionBatchAddRequest.getQuestionBankId();
-        List<Long> questionIdList = questionBankQuestionBatchAddRequest.getQuestionIdList();
-        questionBankQuestionService.batchAddQuestionsToBank(questionIdList, questionBankId, loginUser);
-        return ResultUtils.success(true);
-    }
+//    /**
+//     * 批量添加题目到题库
+//     * @param questionBankQuestionBatchAddRequest
+//     * @param request
+//     * @return
+//     */
+//    @PostMapping("/add/batch")
+//    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+//    public BaseResponse<Boolean> batchAddQuestionsToBank(
+//            @RequestBody QuestionBankQuestionBatchAddRequest questionBankQuestionBatchAddRequest,
+//            HttpServletRequest request
+//    ) {
+//        // 参数校验
+//        ThrowUtils.throwIf(questionBankQuestionBatchAddRequest == null, ErrorCode.PARAMS_ERROR);
+//        User loginUser = userService.getLoginUser(request);
+//        Long questionBankId = questionBankQuestionBatchAddRequest.getQuestionBankId();
+//        List<Long> questionIdList = questionBankQuestionBatchAddRequest.getQuestionIdList();
+//        questionBankQuestionService.batchAddQuestionsToBank(questionIdList, questionBankId, loginUser);
+//        return ResultUtils.success(true);
+//    }
 
     /**
      * 批量从题库中移除题目（两个controller都有这个接口应该没问题吧）
@@ -317,6 +314,15 @@ public class QuestionController {
         Long questionBankId = questionBankQuestionBatchRemoveRequest.getQuestionBankId();
         List<Long> questionIdList = questionBankQuestionBatchRemoveRequest.getQuestionIdList();
         questionBankQuestionService.batchRemoveQuestionsFromBank(questionIdList, questionBankId);
+        return ResultUtils.success(true);
+    }
+
+    @PostMapping("/delete/batch")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> batchDeleteQuestions(@RequestBody QuestionBatchDeleteRequest questionBatchDeleteRequest,
+                                                      HttpServletRequest request) {
+        ThrowUtils.throwIf(questionBatchDeleteRequest == null, ErrorCode.PARAMS_ERROR);
+        questionService.batchDeleteQuestions(questionBatchDeleteRequest.getQuestionIdList());
         return ResultUtils.success(true);
     }
 
