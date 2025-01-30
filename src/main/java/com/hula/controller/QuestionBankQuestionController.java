@@ -272,5 +272,6 @@ public class QuestionBankQuestionController {
         questionBankQuestionService.batchAddQuestionsToBank(questionIdList, questionBankId, loginUser);
         return ResultUtils.success(true);
     }
+    // 这个返回值后期我们也可以自己优化一下，新建一个BatchAddRequrst类，然后将它返回
 
 }
